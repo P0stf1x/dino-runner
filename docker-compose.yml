@@ -1,0 +1,21 @@
+services:
+  frontend:
+    image: busybox:stable
+    command: httpd -f -p 80 -h /www
+    ports:
+      - "8080:80"
+    volumes:
+      - ./game/:/www:ro
+    networks:
+      - caddy
+    restart: unless-stopped
+    labels:
+      caddy: $DOMAIN
+      caddy.header: Cache-Control no-cache
+      caddy.redir: /game/dino_runner /game/dino_runner/ 302
+      caddy.handle_path: /game/dino_runner/*
+      caddy.handle_path.reverse_proxy: "{{upstreams 80}}"
+
+networks:
+  caddy:
+    external: true

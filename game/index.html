@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dino Runner Game</title>
+        <link rel="stylesheet" href="./style.css">
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        </style>
+    </head>
+    <body>
+        <canvas id="gameCanvas" width="1000" height="1000"></canvas>
+        <div id="gameOverModal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Game Over!</h2>
+
+                <p>
+                    Final Score:
+                    <span id="finalScore">0</span>
+                </p>
+                <p>(not working for now...)</p>
+
+                <input
+                    id="nicknameInput"
+                    type="text"
+                    maxlength="20"
+                    placeholder="Nickname"
+                    autocomplete="off">
+
+                <div class="buttons">
+                    <button id="cancelButton">Cancel</button>
+                    <button id="submitButton">Submit</button>
+                </div>
+            </div>
+        </div>
+        <script type="module" src="./game.js"></script>
+    </body>
+
+    
+</html>
