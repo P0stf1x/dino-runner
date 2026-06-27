@@ -30,7 +30,7 @@ function assetLoaded() {
     assetsLoaded++;
 
     if (assetsLoaded === 5) {
-        canvas.addEventListener("mousedown", clicked);
+        canvas.addEventListener("pointerdown", clicked);
 
         if (DEBUG) {
             console.log("Assets loaded. Changing state to WAITING");
