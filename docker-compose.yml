@@ -2,8 +2,6 @@ services:
   frontend:
     image: busybox:stable
     command: httpd -f -p 80 -h /www
-    ports:
-      - "8080:80"
     volumes:
       - ./game/:/www:ro
     networks:
