@@ -14,6 +14,31 @@ services:
       caddy.handle_path: /game/dino_runner/*
       caddy.handle_path.reverse_proxy: "{{upstreams 80}}"
 
+  backend:
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    volumes:
+      - "./backend/app:/code/app"
+    networks:
+      - caddy
+      - backend
+    restart: unless-stopped
+    labels:
+      caddy: $DOMAIN
+      caddy.header: Cache-Control no-cache
+      caddy.handle_path: /game/dino_runner/api/*
+      caddy.handle_path.reverse_proxy: "{{upstreams 80}}"
+
+  redis:
+    image: redis:8.8-alpine
+    networks:
+      - backend
+
+volumes:
+  redis-data:
+
 networks:
   caddy:
     external: true
+  backend:
