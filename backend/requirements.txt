@@ -3,3 +3,4 @@ pydantic>=2.7.0,<3.0.0
 redis==8.0
 hiredis==3.4
 result==0.17
+psycopg[binary, pool]==3.3.4

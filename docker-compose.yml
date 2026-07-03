@@ -23,6 +23,10 @@ services:
     networks:
       - caddy
       - backend
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     restart: unless-stopped
     labels:
       caddy: $DOMAIN
@@ -32,11 +36,29 @@ services:
 
   redis:
     image: redis:8.8-alpine
+    volumes:
+      - redis-data:/data
     networks:
       - backend
+    restart: unless-stopped
+
+  postgresql:
+    image: postgres:18.4-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql
+    networks:
+      - backend
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    restart: unless-stopped
 
 volumes:
   redis-data:
+  pg-data:
 
 networks:
   caddy:
