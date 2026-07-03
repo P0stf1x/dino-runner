@@ -58,7 +58,7 @@ def is_finished(request: Request, session_id: UUID) -> bool:
     return result == "True"
 
 
-def get_score(request: Request, session_id: UUID) -> int:
+def get_heartbeats(request: Request, session_id: UUID) -> int:
     return int(request.app.state.redis.hget(f"session:{session_id}", "heartbeats"))
 
 
