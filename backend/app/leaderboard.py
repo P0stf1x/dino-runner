@@ -76,8 +76,8 @@ async def _postgres_post_score(conn: AsyncConnection, session_id: UUID,
 
 def _valid_score(request: Request, body: request_body.PublishScore): # redundant in normal use, but who knows, it might be useful against cheaters
     heartbeats = anticheat.get_heartbeats(request, body.session_id)
-    lowest_allowable = (heartbeats-1) * 10 * 0.9
-    highest_allowable = (heartbeats+1) * 10 * 1.1
+    lowest_allowable = (heartbeats-15) * 10 * 0.9
+    highest_allowable = (heartbeats+15) * 10 * 1.1
     return (body.score >= lowest_allowable) and (body.score <= highest_allowable)
 
 
