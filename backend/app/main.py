@@ -43,6 +43,12 @@ async def root():
     return {"Hello": "World"}
 
 
+@app.post("/leaderboard/get")
+async def get_score(request: Request, body: request_body.GetScore):
+    result = await leaderboard.get_score(request, body)
+    return result
+
+
 @app.post("/leaderboard/post")
 async def post_score(request: Request, body: request_body.PublishScore):
     await leaderboard.post_score(request, body)

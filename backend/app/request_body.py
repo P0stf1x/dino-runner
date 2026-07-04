@@ -26,4 +26,4 @@ class PublishScore(BaseModel):
 class GetScore(BaseModel):
     uid: UUID
     page: int = 0
-    nickname: str | None
+    nickname: str | None = None

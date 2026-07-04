@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import Request, HTTPException, Depends
 from psycopg import AsyncConnection
+from psycopg.rows import DictRow, dict_row
 
 from uuid import UUID
 from datetime import datetime
@@ -29,16 +30,37 @@ async def _postgres_create(conn: AsyncConnection):
         """)
 
 
-async def _postgres_get_score(conn: AsyncConnection):
-    async with conn.cursor() as cur:
+async def _postgres_get_score(conn: AsyncConnection) -> list[DictRow]:
+    async with conn.cursor(row_factory=dict_row) as cur:
         await cur.execute(
-            "SELECT * FROM scores WHERE username = %s",
-            ("test",),
+            "SELECT username, score "
+            "FROM ("
+                "SELECT DISTINCT ON (username) "
+                    "username, "
+                    "score "
+                "FROM scores "
+                "ORDER BY username, score DESC, session_id"
+            ")"
+            "ORDER BY score DESC;"
         )
-        row = await cur.fetchone()
+        row = await cur.fetchall()
         if row is not None:
-            print(row[0])
-            print(row[1])
+            return row
+        else:
+            raise HTTPException(404, "Not found")
+
+
+async def _postgres_search_score(conn: AsyncConnection, username: str) -> list[DictRow]:
+    async with conn.cursor(row_factory=dict_row) as cur:
+        await cur.execute(
+            "SELECT username, score FROM scores WHERE username = %s",
+            (username,),
+        )
+        row = await cur.fetchall()
+        if row is not None:
+            return row
+        else:
+            raise HTTPException(404, "Not found")
 
 
 async def _postgres_post_score(conn: AsyncConnection, session_id: UUID,
@@ -82,3 +104,18 @@ async def post_score(request: Request, body: request_body.PublishScore):
         await _postgres_post_score(conn, body.session_id, body.uid, body.nickname, body.score, start, end)
 
     anticheat.delete_session(request, body.session_id)
+
+
+async def get_score(request: Request, body: request_body.GetScore):
+    async with pg_conn(request) as conn:
+        match body.nickname:
+            case None:
+                db_result = await _postgres_get_score(conn)
+            case nickname:
+                db_result = await _postgres_search_score(conn, nickname)
+
+    # pagination
+    result_per_page = 10
+    start = body.page * result_per_page
+    end = (body.page+1) * result_per_page
+    return db_result[start:end]
