@@ -7,9 +7,13 @@ const submitButton = document.getElementById("submitButton");
 const cancelButton = document.getElementById("cancelButton");
 
 let currentScore = 0;
+let current_uid = "";
+let current_session_id = "";
 
-export function showGameOver(score) {
+export function showGameOver(score, uid, session_id) {
     currentScore = score;
+    current_uid = uid;
+    current_session_id = session_id;
     final_score.textContent = score;
     nickname_input.value = "";
     modal.classList.remove("hidden");
@@ -30,24 +34,28 @@ submitButton.addEventListener("click", async () => {
     if (!nickname)
         return;
 
-    await submitScore(nickname, currentScore);
+    await submitScore(nickname, currentScore, current_uid, current_session_id);
 
     hideGameOver();
 });
 
-async function submitScore(nickname, score) {
-    const response = await fetch("./api/leaderboard", {
+async function submitScore(nickname, score, uid, session_id) {
+    const response = await fetch("./api/leaderboard/post", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
             nickname,
-            score
+            score,
+            uid,
+            session_id
         })
     });
 
     if (!response.ok) {
-        alert("Failed to submit score");
+        const data = await response.json();
+        let error_message = data.detail;
+        alert(error_message);
     }
 }

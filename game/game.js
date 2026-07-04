@@ -5,6 +5,7 @@ import { Obstacle } from "./obstacle.js";
 import { ObstacleManager } from "./obstacle_manager.js";
 import { bboxs_intersect } from "./bbox.js";
 import { showGameOver } from "./gameover.js";
+import { uid_get_or_new } from "./uid.js";
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -58,6 +59,9 @@ let obstacle_manager = new ObstacleManager(200, obstacleImage)
 let obstacles = [];
 let score = 0;
 let tutorial_timer = 0;
+let session_id;
+let uid;
+let time_since_last_heartbeat;
 
 export const game_state = Object.freeze({
     LOADING:  0,
@@ -75,6 +79,8 @@ export let state = game_state.LOADING;
 let lastFrameTime = performance.now();
 
 export function init_and_restart() {
+    uid = uid_get_or_new();
+    time_since_last_heartbeat = 0;
     obstacles = [];
     state = game_state.WAITING;
     lastFrameTime = performance.now();
@@ -114,6 +120,7 @@ function clicked() {
         if (DEBUG) {
             console.log("Pressed jump. Changing state to TUTORIAL");
         }
+        game_started(uid);
         state = game_state.TUTORIAL;
     }
     player.jump(750);
@@ -163,6 +170,12 @@ function update(dt) {
         }
         state = game_state.PLAYING;
     }
+
+    time_since_last_heartbeat += dt;
+    if (time_since_last_heartbeat >= 1) {
+        send_heartbeat(session_id, uid);
+        time_since_last_heartbeat -= 1
+    }
 }
 
 function render() {
@@ -191,11 +204,52 @@ function render() {
     }
 }
 
-function gameover() {
+async function gameover() {
+    state = game_state.FINISHED;
     if (DEBUG) {
         console.log("Hit obstacle. Changing state to FINISHED");
     }
-    state = game_state.FINISHED;
 
-    showGameOver(score.toFixed(0));
+    await fetch("./api/finish", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            uid,
+            session_id
+        })
+    });
+
+    showGameOver(score.toFixed(0), uid, session_id);
+}
+
+async function game_started(uid) {
+    const response = await fetch("./api/start", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            uid
+        })
+    });
+
+    if (response.ok) {
+        const data = await response.json()
+        session_id = data.session_id
+    }
+}
+
+async function send_heartbeat(session_id, uid) {
+    const response = await fetch("./api/heartbeat", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            session_id,
+            uid
+        })
+    });
 }
