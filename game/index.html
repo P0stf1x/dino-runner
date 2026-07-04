@@ -10,7 +10,42 @@
         </style>
     </head>
     <body>
-        <canvas id="gameCanvas" width="1000" height="1000"></canvas>
+        <div class="game-layout">
+            <canvas id="gameCanvas" width="1000" height="1000"></canvas>
+
+            <aside class="leaderboard">
+                <h2>Leaderboard</h2>
+
+                <div class="leaderboard-controls">
+                    <input
+                        id="leaderboardSearch"
+                        type="text"
+                        maxlength="20"
+                        placeholder="Search">
+                </div>
+
+                <table id="leaderboardTable">
+                    <colgroup>
+                        <col style="width: 66.67%">
+                        <col style="width: 33.33%">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Nickname</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+
+                    <tbody></tbody>
+                </table>
+
+                <div class="leaderboard-pagination">
+                    <button id="leaderboardPrev">&lt;</button>
+                    <span id="leaderboardPage">1</span>
+                    <button id="leaderboardNext">&gt;</button>
+                </div>
+            </aside>
+        </div>
         <div id="gameOverModal" class="modal hidden">
             <div class="modal-content">
                 <h2>Game Over!</h2>
@@ -34,7 +69,6 @@
             </div>
         </div>
         <script type="module" src="./game.js"></script>
+        <script type="module" src="./leaderboard.js"></script>
     </body>
-
-    
 </html>
