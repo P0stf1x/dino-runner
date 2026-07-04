@@ -22,7 +22,7 @@ async def _postgres_create(conn: AsyncConnection):
         CREATE TABLE IF NOT EXISTS scores (
             session_id UUID PRIMARY KEY,
             user_id UUID NOT NULL,
-            username TEXT NOT NULL,
+            nickname TEXT NOT NULL,
             score INT NOT NULL,
             created_at TIMESTAMP NOT NULL,
             finished_at TIMESTAMP NOT NULL
@@ -33,13 +33,13 @@ async def _postgres_create(conn: AsyncConnection):
 async def _postgres_get_score(conn: AsyncConnection) -> list[DictRow]:
     async with conn.cursor(row_factory=dict_row) as cur:
         await cur.execute(
-            "SELECT username, score "
+            "SELECT nickname, score "
             "FROM ("
-                "SELECT DISTINCT ON (username) "
-                    "username, "
+                "SELECT DISTINCT ON (nickname) "
+                    "nickname, "
                     "score "
                 "FROM scores "
-                "ORDER BY username, score DESC, session_id"
+                "ORDER BY nickname, score DESC, session_id"
             ")"
             "ORDER BY score DESC;"
         )
@@ -50,11 +50,11 @@ async def _postgres_get_score(conn: AsyncConnection) -> list[DictRow]:
             raise HTTPException(404, "Not found")
 
 
-async def _postgres_search_score(conn: AsyncConnection, username: str) -> list[DictRow]:
+async def _postgres_search_score(conn: AsyncConnection, nickname: str) -> list[DictRow]:
     async with conn.cursor(row_factory=dict_row) as cur:
         await cur.execute(
-            "SELECT username, score FROM scores WHERE username = %s",
-            (username,),
+            "SELECT nickname, score FROM scores WHERE nickname = %s",
+            (nickname,),
         )
         row = await cur.fetchall()
         if row is not None:
@@ -64,13 +64,13 @@ async def _postgres_search_score(conn: AsyncConnection, username: str) -> list[D
 
 
 async def _postgres_post_score(conn: AsyncConnection, session_id: UUID,
-                               user_id: UUID, username: str, score: int,
+                               user_id: UUID, nickname: str, score: int,
                                created_at: datetime, finished_at: datetime):
     async with conn.cursor() as cur:
         await cur.execute(
             "INSERT INTO scores "
             "VALUES (%s, %s, %s, %s, %s, %s)",
-            (session_id, user_id, username, score, created_at, finished_at),
+            (session_id, user_id, nickname, score, created_at, finished_at),
         )
 
 
